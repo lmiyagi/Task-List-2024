@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.leonardomiyagi.tasklist2024"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.leonardomiyagi.tasklist2024"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
