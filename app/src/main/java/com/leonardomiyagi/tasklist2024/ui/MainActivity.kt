@@ -1,7 +1,6 @@
-package com.leonardomiyagi.tasklist2024
+package com.leonardomiyagi.tasklist2024.ui
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,10 +10,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.leonardomiyagi.tasklist2024.core.base.BaseActivity
 import com.leonardomiyagi.tasklist2024.ui.theme.TaskList2024Theme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import javax.inject.Named
 
-class MainActivity : ComponentActivity() {
+@AndroidEntryPoint
+class MainActivity : BaseActivity() {
+
+    @Inject
+    @Named("TEST_STRING")
+    lateinit var test: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +30,7 @@ class MainActivity : ComponentActivity() {
             TaskList2024Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = test,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
