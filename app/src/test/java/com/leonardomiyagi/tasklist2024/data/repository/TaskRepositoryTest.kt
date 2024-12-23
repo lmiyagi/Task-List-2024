@@ -2,19 +2,20 @@ package com.leonardomiyagi.tasklist2024.data.repository
 
 import com.leonardomiyagi.tasklist2024.data.dao.TaskDAO
 import com.leonardomiyagi.tasklist2024.data.local.Task
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 class TaskRepositoryTest {
 
@@ -32,8 +33,10 @@ class TaskRepositoryTest {
     }
 
     @Test
-    fun `can add task`() = runTest {
-        doNothing().`when`(mockTaskDAO).insert(any())
+    fun `can add task with no errors`() = runTest {
+        val generatedTaskId = 1L
+        `when`(mockTaskDAO.insert(any())).thenReturn(generatedTaskId)
+        `when`(mockTaskDAO.getById(any())).thenReturn(listOf(Task(generatedTaskId, "Test task")))
 
         val task = Task(title = "Test task")
         var addedTask: Task? = null
@@ -41,98 +44,123 @@ class TaskRepositoryTest {
 
         assertNotNull(addedTask)
         assertNotNull(addedTask.id)
+        assertEquals(addedTask.id, generatedTaskId)
         assertEquals(task.title, addedTask.title)
         assertEquals(task.description, addedTask.description)
         assertEquals(task.isDone, addedTask.isDone)
+        verify(mockTaskDAO, times(1)).insert(task)
+    }
+
+    @Test
+    fun `can fail to add task and inform it`() = runTest {
+        val generatedTaskId = 1L
+        `when`(mockTaskDAO.getById(any())).thenReturn(listOf(Task(generatedTaskId, "Test task")))
+        `when`(mockTaskDAO.insert(any())).thenReturn(-1L)
+
+        val task = Task(title = "Test task")
+
+        var exception: Exception? = null
+
+        try {
+            taskRepository.addTask(task)
+        } catch (e: Exception) {
+            exception = e
+        }
+
+        assertNotNull(exception)
+        verify(mockTaskDAO, times(1)).insert(task)
     }
 
     @Test
     fun `can get a task by id`() = runTest {
-        val taskId = 1
+        val taskId = 1L
 
-        `when`(mockTaskDAO.getById(any())).thenReturn(Task(taskId, "Test task"))
+        `when`(mockTaskDAO.getById(any())).thenReturn(listOf(Task(taskId, "Test task")))
 
         var retrievedTask: Task? = null
 
         retrievedTask = taskRepository.getTaskByID(taskId)
 
         assertNotNull(retrievedTask)
+        assertNotNull(retrievedTask!!.id)
         assertEquals(retrievedTask.id, taskId)
+        verify(mockTaskDAO, times(1)).getById(taskId)
     }
 
     @Test
-    fun `can update a task and confirm`() = runTest {
-        doNothing().`when`(mockTaskDAO).insert(any())
+    fun `can fail to get a task by id`() = runTest {
+        val taskId = 1L
 
-        val task = createTaskWithoutID()
-        var addedTask: Task? = null
+        `when`(mockTaskDAO.getById(any())).thenReturn(emptyList())
 
-        runBlocking {
-            addedTask = taskRepository.addTask(task)
-        }
+        var retrievedTask: Task? = null
 
-        assertNotNull(addedTask)
-        assertNotNull(addedTask?.id)
+        retrievedTask = taskRepository.getTaskByID(taskId)
 
-        var isUpdated = false
+        assertNull(retrievedTask)
+        verify(mockTaskDAO, times(1)).getById(taskId)
+    }
 
+    @Test
+    fun `can update a task with no errors`() = runTest {
         `when`(mockTaskDAO.update(any())).thenReturn(1)
+        val task = Task(1L, "Task title")
 
-        isUpdated = taskRepository.updateTask(addedTask!!)
+        task.title = "Something"
 
-        assertTrue(isUpdated)
+        taskRepository.updateTask(task)
+
+        verify(mockTaskDAO, times(1)).update(task)
     }
 
     @Test
     fun `can fail to update a task and inform`() = runTest {
-        doNothing().`when`(mockTaskDAO).insert(any())
+        `when`(mockTaskDAO.update(any())).thenReturn(0)
+        val task = Task(1L, "Task title")
 
-        val task = createTaskWithoutID()
-        var addedTask: Task? = null
+        task.title = "Something"
 
-        runBlocking {
-            addedTask = taskRepository.addTask(task)
+        var exception: Exception? = null
+
+        try {
+            taskRepository.updateTask(task)
+        } catch (e: Exception) {
+            exception = e
         }
 
-        assertNotNull(addedTask)
-        assertNotNull(addedTask?.id)
-
-        var isUpdated = false
-
-        `when`(mockTaskDAO.update(any())).thenReturn(0)
-
-        isUpdated = taskRepository.updateTask(addedTask!!)
-
-        assertFalse(isUpdated)
+        assertNotNull(exception)
+        verify(mockTaskDAO, times(1)).update(task)
     }
 
     @Test
-    fun `can delete a task and confirm`() = runTest {
-        `when`(mockTaskDAO.delete(any())).thenReturn(1)
+    fun `can delete a task`() = runTest {
+        val tasksIdsToDelete = listOf(1L)
+        `when`(mockTaskDAO.deleteMultiple(any())).thenReturn(1)
 
-        val task = Task(1, "Test task")
+        taskRepository.deleteTasksByID(tasksIdsToDelete)
 
-        var isDeleted = false
-
-        isDeleted = taskRepository.deleteTaskByID(task.id!!)
-
-        assertTrue(isDeleted)
+        verify(mockTaskDAO, times(1)).deleteMultiple(tasksIdsToDelete)
     }
 
     @Test
-    fun `can fail to delete a task and inform`() = runTest {
-        `when`(mockTaskDAO.delete(any())).thenReturn(0)
+    fun `can delete multiple tasks`() = runTest {
+        val tasksIdsToDelete = listOf(1L, 2L, 3L)
+        `when`(mockTaskDAO.deleteMultiple(any())).thenReturn(1)
 
-        val task = Task(1, "Test task")
+        taskRepository.deleteTasksByID(tasksIdsToDelete)
 
-        var isDeleted = false
-
-        isDeleted = taskRepository.deleteTaskByID(task.id!!)
-
-        assertFalse(isDeleted)
+        verify(mockTaskDAO, times(1)).deleteMultiple(tasksIdsToDelete)
     }
 
-    private fun createTaskWithoutID(): Task {
-        return Task(title = "Test task")
+    @Test
+    fun `can get a list of tasks`() = runTest {
+        val task1 = Task(1L, "Task 1")
+        val task2 = Task(1L, "Task 1")
+        val task3 = Task(1L, "Task 1")
+
+        val tasks = listOf(task1, task2, task3)
+        `when`(mockTaskDAO.getAllTasks()).thenReturn(flowOf(tasks))
+
+        assertEquals(taskRepository.getTasks().first(), tasks)
     }
 }

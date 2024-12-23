@@ -1,37 +1,48 @@
 package com.leonardomiyagi.tasklist2024.data.repository
 
+import com.leonardomiyagi.tasklist2024.core.exceptions.DatabaseErrorException
 import com.leonardomiyagi.tasklist2024.data.dao.TaskDAO
 import com.leonardomiyagi.tasklist2024.data.local.Task
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface TaskRepository {
     suspend fun addTask(task: Task): Task
-    suspend fun updateTask(task: Task): Boolean
-    suspend fun getTaskByID(id: Int): Task
-    suspend fun getTasks(): List<Task>
-    suspend fun deleteTaskByID(id: Int): Boolean
+    suspend fun updateTask(task: Task)
+    suspend fun getTaskByID(id: Long): Task?
+    fun getTasks(): Flow<List<Task>>
+    suspend fun deleteTasksByID(ids: List<Long>)
 }
 
 class DefaultTaskRepository @Inject constructor(
     private val dao: TaskDAO
 ) : TaskRepository {
     override suspend fun addTask(task: Task): Task {
-        TODO("Not yet implemented")
+        val id = dao.insert(task)
+        val addedTask = getTaskByID(id)
+
+        if (id == -1L || addedTask == null) {
+            throw DatabaseErrorException()
+        }
+
+        return addedTask
     }
 
-    override suspend fun updateTask(task: Task): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun updateTask(task: Task) {
+        if (dao.update(task) != 1) {
+            throw DatabaseErrorException()
+        }
     }
 
-    override suspend fun getTaskByID(id: Int): Task {
-        return dao.getById(id)
+    override suspend fun getTaskByID(id: Long): Task? {
+        return dao.getById(id).firstOrNull()
     }
 
-    override suspend fun getTasks(): List<Task> {
-        TODO("Not yet implemented")
+    override fun getTasks(): Flow<List<Task>> {
+        return dao.getAllTasks()
     }
 
-    override suspend fun deleteTaskByID(id: Int): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun deleteTasksByID(ids: List<Long>) {
+        dao.deleteMultiple(ids)
     }
 }
