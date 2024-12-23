@@ -24,7 +24,7 @@ class DefaultTaskRepository @Inject constructor(
     }
 
     override suspend fun getTaskByID(id: Int): Task {
-        TODO("Not yet implemented")
+        return dao.getById(id)
     }
 
     override suspend fun getTasks(): List<Task> {
