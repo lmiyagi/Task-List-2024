@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Task List 2024</string>
+    <string name="global_no_description">No description</string>
 </resources>
