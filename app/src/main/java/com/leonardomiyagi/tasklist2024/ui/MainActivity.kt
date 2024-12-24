@@ -1,15 +1,17 @@
 package com.leonardomiyagi.tasklist2024.ui
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +37,13 @@ class MainActivity : BaseActivity() {
         enableEdgeToEdge()
         setContent {
             TaskList2024Theme {
-                Scaffold(
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainNavigation(this)
+                }
+                /*Scaffold(
                     topBar = {
                         DefaultTopBar()
                     },
@@ -50,7 +58,7 @@ class MainActivity : BaseActivity() {
                             TaskCard(task)
                         }
                     }
-                }
+                }*/
             }
         }
     }
@@ -98,7 +106,6 @@ val testTasks = listOf(
         description = "ASPOikja SDKpoao koaSD kasdSDKpoaoSDKpoaoSDKpoaoSDKpoao SDKpoaoSDKpoao SDKpoao "
     )
 )
-
 
 @Preview(showBackground = true)
 @Composable
