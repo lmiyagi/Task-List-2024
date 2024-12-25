@@ -1,6 +1,7 @@
 package com.leonardomiyagi.tasklist2024.ui
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,7 @@ class MainActivity : BaseActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainNavigation(this)
+                    Toast.makeText(this, test, Toast.LENGTH_SHORT).show()
                 }
                 /*Scaffold(
                     topBar = {
