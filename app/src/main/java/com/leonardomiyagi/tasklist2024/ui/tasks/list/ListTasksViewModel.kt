@@ -6,6 +6,8 @@ import com.leonardomiyagi.tasklist2024.data.local.Task
 import com.leonardomiyagi.tasklist2024.data.repository.TaskRepository
 import com.leonardomiyagi.tasklist2024.ui.tasks.list.ListTasksUIState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -20,15 +22,25 @@ class ListTasksViewModel @Inject constructor(
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<ListTasksUIState> = taskRepository.getTasks()
-        .map<List<Task>, ListTasksUIState>(::Success)
-        .catch { it.printStackTrace() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListTasksUIState.Loading)
+    private val _uiState = MutableStateFlow<ListTasksUIState>(ListTasksUIState.Loading)
+    val uiState: StateFlow<ListTasksUIState> = _uiState
 
-    // TODO remove this
-    fun addRandom() {
-        val randomNumber = Random.nextInt(100)
-        viewModelScope.launch { taskRepository.addTask(Task(title = "Test task $randomNumber")) }
+    init {
+        viewModelScope.launch {
+            try {
+                taskRepository.getTasks().map { Success(it) }
+                    .catch { _uiState.value = ListTasksUIState.Error(it) }
+                    .stateIn(
+                        viewModelScope,
+                        SharingStarted.WhileSubscribed(5000),
+                        ListTasksUIState.Loading
+                    ).collect { tasks ->
+                        _uiState.value = tasks
+                    }
+            } catch (e: Throwable) {
+                _uiState.value = ListTasksUIState.Error(e)
+            }
+        }
     }
 }
 
