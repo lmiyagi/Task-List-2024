@@ -1,7 +1,6 @@
 package com.leonardomiyagi.tasklist2024.ui.tasks.list
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,14 +22,17 @@ import com.leonardomiyagi.tasklist2024.ui.composables.DefaultTopBar
 import com.leonardomiyagi.tasklist2024.ui.composables.TaskCard
 
 @Composable
-fun ListTasks(context: Context, viewModel: ListTasksViewModel = hiltViewModel()) {
+fun ListTasks(
+    context: Context,
+    onAddTaskClicked: () -> Unit,
+    viewModel: ListTasksViewModel = hiltViewModel()
+) {
     val tasks by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(topBar = {
         DefaultTopBar()
     }, floatingActionButton = {
         DefaultFAB(Icons.Filled.Add) {
-            // TODO add task flow
-            Toast.makeText(context, "Add", Toast.LENGTH_SHORT).show()
+            onAddTaskClicked()
         }
     }) { innerPadding ->
         when (tasks) {

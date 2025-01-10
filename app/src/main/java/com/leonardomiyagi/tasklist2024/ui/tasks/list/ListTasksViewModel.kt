@@ -6,7 +6,6 @@ import com.leonardomiyagi.tasklist2024.data.local.Task
 import com.leonardomiyagi.tasklist2024.data.repository.TaskRepository
 import com.leonardomiyagi.tasklist2024.ui.tasks.list.ListTasksUIState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class ListTasksViewModel @Inject constructor(
